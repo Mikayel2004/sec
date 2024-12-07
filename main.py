@@ -1,4 +1,6 @@
 from flask import Flask
+
+from Migrations.migrations import apply_migrations
 from routes import register_routes
 from db.DBInit import initDb
 from config import config
@@ -40,6 +42,8 @@ def initialize_database():
         raise
     finally:
         conn.close()
+    print("Applying migrations...")
+    apply_migrations(db_params)
 
 
 def create_app():
