@@ -5,12 +5,18 @@ from config import config
 
 def initialize_database():
     """Initialize the database using parameters from the config."""
-    print("Initializing database...")
-    initDb(config())  # db_params should be a dictionary, not a function
+    db_params = config()
+    initDb(
+        host=db_params["host"],
+        port=db_params["port"],
+        admin_user=db_params["admin_user"],
+        admin_password=db_params["admin_password"],
+        db_name=db_params["db_name"]
+    )
 
 def create_app():
-    """Create and configure the Flask application."""
     app = Flask(__name__)
-    app.config['SECRET_KEY'] = 'your_secret_key'
+    print("Registering routes...")
     register_routes(app)
     return app
+

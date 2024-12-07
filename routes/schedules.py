@@ -4,7 +4,7 @@ from utils.db_utils import get_db_connection
 schedules_blueprint = Blueprint('schedules', __name__)
 
 
-@schedules_blueprint.route('/schedules', methods=['POST'])
+@schedules_blueprint.route('/schedules', methods=['GET', 'POST'])
 def create_schedule():
     data = request.json
     try:

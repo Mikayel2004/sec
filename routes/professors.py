@@ -1,8 +1,7 @@
-from flask import Blueprint, jsonify, request
+from flask import Blueprint, jsonify, request, render_template
 from utils.db_utils import get_db_connection
 
 professors_blueprint = Blueprint('professors', __name__)
-
 
 @professors_blueprint.route('/professors', methods=['GET', 'POST'])
 def handle_professors():
@@ -14,9 +13,16 @@ def handle_professors():
                     professors = cursor.fetchall()
             return jsonify(professors), 200
         except Exception as e:
-            return jsonify({"error": str(e)}), 500
+            return jsonify({"error": f"An error occurred while fetching professors: {str(e)}"}), 500
+    
     elif request.method == 'POST':
-        data = request.json
+        data = request.get_json()
+        if not data:
+            return jsonify({"error": "Invalid JSON payload"}), 400
+        required_fields = ['name', 'degree', 'department', 'position']
+        if not all(field in data for field in required_fields):
+            return jsonify({"error": "Missing required fields"}), 400
+
         try:
             with get_db_connection() as conn:
                 with conn.cursor() as cursor:
@@ -28,7 +34,7 @@ def handle_professors():
                     new_professor = cursor.fetchone()
             return jsonify(new_professor), 201
         except Exception as e:
-            return jsonify({"error": str(e)}), 500
+            return jsonify({"error": f"An error occurred while adding professor: {str(e)}"}), 500
 
 
 @professors_blueprint.route('/professors/<int:id>', methods=['GET', 'PUT', 'DELETE'])
@@ -42,11 +48,18 @@ def handle_professor_by_id(id):
             if professor:
                 return jsonify(professor), 200
             else:
-                return jsonify({"error": "Professor not found"}), 404
+                return jsonify({"error": f"Professor with ID {id} not found"}), 404
         except Exception as e:
-            return jsonify({"error": str(e)}), 500
+            return jsonify({"error": f"An error occurred while fetching professor: {str(e)}"}), 500
+    
     elif request.method == 'PUT':
-        data = request.json
+        data = request.get_json()
+        if not data:
+            return jsonify({"error": "Invalid JSON payload"}), 400
+        required_fields = ['name', 'degree', 'department', 'position']
+        if not all(field in data for field in required_fields):
+            return jsonify({"error": "Missing required fields"}), 400
+
         try:
             with get_db_connection() as conn:
                 with conn.cursor() as cursor:
@@ -59,9 +72,10 @@ def handle_professor_by_id(id):
             if updated_professor:
                 return jsonify(updated_professor), 200
             else:
-                return jsonify({"error": "Professor not found"}), 404
+                return jsonify({"error": f"Professor with ID {id} not found"}), 404
         except Exception as e:
-            return jsonify({"error": str(e)}), 500
+            return jsonify({"error": f"An error occurred while updating professor: {str(e)}"}), 500
+    
     elif request.method == 'DELETE':
         try:
             with get_db_connection() as conn:
@@ -72,6 +86,6 @@ def handle_professor_by_id(id):
             if deleted_professor:
                 return jsonify(deleted_professor), 200
             else:
-                return jsonify({"error": "Professor not found"}), 404
+                return jsonify({"error": f"Professor with ID {id} not found"}), 404
         except Exception as e:
-            return jsonify({"error": str(e)}), 500
+            return jsonify({"error": f"An error occurred while deleting professor: {str(e)}"}), 500

@@ -5,6 +5,5 @@ if __name__ == "__main__":
     initialize_database()
     print("Starting Flask server...")
 
-    app = create_app()  # Call create_app to initialize the app
+    app = create_app()  # Correctly calling create_app without arguments
     app.run(debug=True)  # Start the server
-

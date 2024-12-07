@@ -2,7 +2,7 @@ import psycopg2
 from psycopg2.extras import RealDictCursor
 from config import config
 
-def get_db_connection(psycopg2, sql, host, port, admin_user, admin_password, db_name, db_owner):
+def get_db_connection():
     params = config()
     return psycopg2.connect(
         host=params["host"],
