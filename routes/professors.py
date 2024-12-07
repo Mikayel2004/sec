@@ -3,7 +3,7 @@ from utils.db_utils import get_db_connection
 
 professors_blueprint = Blueprint('professors', __name__)
 
-@professors_blueprint.route('/professors', methods=['GET', 'POST'])
+@professors_blueprint.route('/', methods=['GET', 'POST'])
 def handle_professors():
     if request.method == 'GET':
         try:
@@ -37,7 +37,7 @@ def handle_professors():
             return jsonify({"error": f"An error occurred while adding professor: {str(e)}"}), 500
 
 
-@professors_blueprint.route('/professors/<int:id>', methods=['GET', 'PUT', 'DELETE'])
+@professors_blueprint.route('/', methods=['GET', 'PUT', 'DELETE'])
 def handle_professor_by_id(id):
     if request.method == 'GET':
         try:

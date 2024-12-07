@@ -4,7 +4,7 @@ from utils.db_utils import get_db_connection
 schedules_blueprint = Blueprint('schedules', __name__)
 
 
-@schedules_blueprint.route('/schedules', methods=['GET', 'POST'])
+@schedules_blueprint.route('/', methods=['GET', 'POST'])
 def create_schedule():
     data = request.json
     try:
@@ -21,7 +21,7 @@ def create_schedule():
         return jsonify({"error": str(e)}), 500
 
 
-@schedules_blueprint.route('/subjects/<int:id>', methods=['GET', 'PUT', 'DELETE'])
+@schedules_blueprint.route('/', methods=['GET', 'PUT', 'DELETE'])
 def handle_subject_by_id(id):
     if request.method == 'GET':
         try:
@@ -67,7 +67,7 @@ def handle_subject_by_id(id):
             return jsonify({"error": str(e)}), 500
 
 
-@schedules_blueprint.route('/schedules/<int:id>', methods=['GET', 'PUT', 'DELETE'])
+@schedules_blueprint.route('/', methods=['GET', 'PUT', 'DELETE'])
 def handle_schedule_by_id(id):
     if request.method == 'GET':
         try:

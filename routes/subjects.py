@@ -6,7 +6,7 @@ subjects_blueprint = Blueprint('subjects', __name__)
 
 
 # CRUD Operations for Subjects
-@subjects_blueprint.route('', methods=['GET', 'POST'])
+@subjects_blueprint.route('/', methods=['GET', 'POST'])
 def handle_subjects():
     if request.method == 'GET':
         try:
@@ -33,7 +33,7 @@ def handle_subjects():
             return jsonify({"error": str(e)}), 500
 
 
-@subjects_blueprint.route('/<int:id>', methods=['GET', 'PUT', 'DELETE'])
+@subjects_blueprint.route('/', methods=['GET', 'PUT', 'DELETE'])
 def handle_subject_by_id(id):
     if request.method == 'GET':
         try:
