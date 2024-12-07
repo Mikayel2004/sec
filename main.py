@@ -2,10 +2,15 @@ from flask import Flask
 from routes import register_routes
 from db.DBInit import initDb
 from config import config
-from db.DataGen import  generate_data
+from db.DataGen import generate_data
+import psycopg2
+
+
 def initialize_database():
-    """Initialize the database using parameters from the config."""
+    """Initialize the database and generate initial data using parameters from the config."""
     db_params = config()
+
+    # Step 1: Initialize the database and tables
     initDb(
         host=db_params["host"],
         port=db_params["port"],
@@ -14,12 +19,32 @@ def initialize_database():
         db_name=db_params["db_name"]
     )
 
-def DataGen():
-    generate_data()
+    # Step 2: Populate the database with initial data
+    try:
+        print("Generating initial data...")
+        conn = psycopg2.connect(
+            host=db_params["host"],
+            port=db_params["port"],
+            user=db_params["admin_user"],
+            password=db_params["admin_password"],
+            dbname=db_params["db_name"]
+        )
+        print("Connected to the database for data generation.")
+
+        with conn.cursor() as cursor:
+            generate_data(cursor)  # Generate data using the cursor
+            conn.commit()  # Commit the changes
+            print("Initial data generation completed successfully.")
+    except Exception as e:
+        print(f"Error during data generation: {e}")
+        raise
+    finally:
+        conn.close()
+
 
 def create_app():
+    """Create and configure the Flask application."""
     app = Flask(__name__)
     print("Registering routes...")
     register_routes(app)
     return app
-
