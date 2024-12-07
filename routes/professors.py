@@ -3,7 +3,7 @@ from utils.db_utils import get_db_connection
 
 professors_blueprint = Blueprint('professors', __name__)
 
-@professors_blueprint.route('/', methods=['GET', 'POST'])
+@professors_blueprint.route('/', methods=['GET'])
 def handle_professors():
     if request.method == 'GET':
         try:
