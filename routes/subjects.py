@@ -1,3 +1,6 @@
+# /routes/subjects.py
+
+
 from flask import Blueprint, jsonify, request
 from utils.db_utils import get_db_connection
 
@@ -77,3 +80,36 @@ def handle_subject_by_id(id):
                 return jsonify({"error": "Subject not found"}), 404
         except Exception as e:
             return jsonify({"error": str(e)}), 500
+
+@subjects_blueprint.route('/with_professors', methods=['GET'])
+def get_subjects_with_professors():
+    try:
+        with get_db_connection() as conn:
+            with conn.cursor() as cursor:
+                query = """
+                    SELECT subject.name AS subject_name, professor.name AS professor_name
+                    FROM subject
+                    INNER JOIN professor ON subject.professor_id = professor.id;
+                """
+                cursor.execute(query)
+                results = cursor.fetchall()
+        return jsonify(results), 200
+    except Exception as e:
+        return jsonify({"error": f"Error fetching subjects with professors: {str(e)}"}), 500
+
+@subjects_blueprint.route('/group_by_hours', methods=['GET'])
+def group_subjects_by_hours():
+    try:
+        with get_db_connection() as conn:
+            with conn.cursor() as cursor:
+                query = """
+                    SELECT hours, COUNT(*) AS subject_count
+                    FROM subject
+                    GROUP BY hours
+                    ORDER BY hours;
+                """
+                cursor.execute(query)
+                results = cursor.fetchall()
+        return jsonify(results), 200
+    except Exception as e:
+        return jsonify({"error": f"Error grouping subjects by hours: {str(e)}"}), 500

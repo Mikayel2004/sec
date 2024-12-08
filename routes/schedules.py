@@ -1,3 +1,5 @@
+# /routes/schedules.py
+
 from flask import Blueprint, jsonify, request
 from utils.db_utils import get_db_connection
 
@@ -121,3 +123,25 @@ def handle_schedule_by_id(id):
 @schedules_blueprint.route('/')
 def home():
     return jsonify({"message": "Welcome to the API!"}), 200
+
+@schedules_blueprint.route('/update_by_group_and_date', methods=['PUT'])
+def update_schedule_by_group_and_date():
+    group_name = request.args.get('group_name')
+    date = request.args.get('date')
+    new_time = request.json.get('time')
+
+    try:
+        with get_db_connection() as conn:
+            with conn.cursor() as cursor:
+                query = """
+                    UPDATE schedule
+                    SET time = %s
+                    WHERE group_name = %s AND date = %s
+                    RETURNING *;
+                """
+                cursor.execute(query, (new_time, group_name, date))
+                conn.commit()
+                updated_schedules = cursor.fetchall()
+        return jsonify(updated_schedules), 200
+    except Exception as e:
+        return jsonify({"error": f"Error updating schedules: {str(e)}"}), 500

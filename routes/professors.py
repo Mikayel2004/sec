@@ -1,3 +1,5 @@
+# /routes/professors.py
+
 from flask import Blueprint, jsonify, request, render_template
 from utils.db_utils import get_db_connection
 
@@ -89,3 +91,47 @@ def handle_professor_by_id(id):
                 return jsonify({"error": f"Professor with ID {id} not found"}), 404
         except Exception as e:
             return jsonify({"error": f"An error occurred while deleting professor: {str(e)}"}), 500
+
+
+@professors_blueprint.route('/search', methods=['GET'])
+def search_professors():
+    # Get the search query parameter
+    query = request.args.get('query', '')  # Default to empty string if no query provided
+
+    try:
+        with get_db_connection() as conn:
+            with conn.cursor() as cursor:
+                # Search in the 'name', 'degree', and 'department' fields
+                cursor.execute("""
+                    SELECT * FROM professor
+                    WHERE name ILIKE %s OR degree ILIKE %s OR department ILIKE %s;
+                """, (f'%{query}%', f'%{query}%', f'%{query}%'))
+                results = cursor.fetchall()
+        return jsonify(results), 200
+    except Exception as e:
+        return jsonify({"error": f"Error performing search: {str(e)}"}), 500
+
+
+
+@professors_blueprint.route('/sorted', methods=['GET'])
+def get_sorted_professors():
+    sort_field = request.args.get('sort_field', 'name')
+    sort_order = request.args.get('sort_order', 'ASC')
+
+    if sort_field not in ['name', 'department']:
+        return jsonify({"error": "Invalid sort field"}), 400
+    if sort_order.upper() not in ['ASC', 'DESC']:
+        return jsonify({"error": "Invalid sort order"}), 400
+
+    try:
+        with get_db_connection() as conn:
+            with conn.cursor() as cursor:
+                query = f"""
+                    SELECT * FROM professor
+                    ORDER BY {sort_field} {sort_order};
+                """
+                cursor.execute(query)
+                professors = cursor.fetchall()
+        return jsonify(professors), 200
+    except Exception as e:
+        return jsonify({"error": f"Error sorting professors: {str(e)}"}), 500

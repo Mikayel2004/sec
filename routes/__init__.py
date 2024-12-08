@@ -1,3 +1,5 @@
+# /routes/__init_.py
+
 from flask import Flask
 from routes.professors import professors_blueprint
 from routes.schedules import schedules_blueprint
