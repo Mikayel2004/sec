@@ -135,3 +135,90 @@ def get_sorted_professors():
         return jsonify(professors), 200
     except Exception as e:
         return jsonify({"error": f"Error sorting professors: {str(e)}"}), 500
+
+@professors_blueprint.route('/filter', methods=['GET'])
+def filter_professors():
+    degree = request.args.get('degree')
+    department = request.args.get('department')
+
+    try:
+        with get_db_connection() as conn:
+            with conn.cursor() as cursor:
+                query = """
+                    SELECT * FROM professor
+                    WHERE degree = %s AND department = %s;
+                """
+                cursor.execute(query, (degree, department))
+                professors = cursor.fetchall()
+        return jsonify(professors), 200
+    except Exception as e:
+        return jsonify({"error": f"Error fetching filtered professors: {str(e)}"}), 500
+
+
+@professors_blueprint.route('/populate_metadata', methods=['POST'])
+def populate_metadata():
+    try:
+        with get_db_connection() as conn:
+            with conn.cursor() as cursor:
+                cursor.execute("""
+                    UPDATE professor
+                    SET metadata = jsonb_build_object(
+                        'bio', 'This professor specializes in machine learning and AI.',
+                        'achievements', ARRAY['Published 10 papers', 'Supervised 5 PhD students'],
+                        'interests', ARRAY['AI', 'ML', 'Big Data']
+                    )
+                    WHERE metadata IS NULL;
+                """)
+                conn.commit()
+        return jsonify({"message": "Metadata populated successfully!"}), 200
+    except Exception as e:
+        return jsonify({"error": f"Error populating metadata: {str(e)}"}), 500
+
+@professors_blueprint.route('/search_metadata', methods=['GET'])
+def search_metadata():
+    search_pattern = request.args.get('pattern', '')
+
+    if not search_pattern:
+        return jsonify({"error": "Search pattern is required"}), 400
+
+    try:
+        with get_db_connection() as conn:
+            with conn.cursor() as cursor:
+                query = """
+                    SELECT id, name, metadata
+                    FROM professor
+                    WHERE metadata::TEXT ~* %s;
+                """
+                cursor.execute(query, (search_pattern,))
+                results = cursor.fetchall()
+        return jsonify(results), 200
+    except Exception as e:
+        return jsonify({"error": f"Error performing metadata search: {str(e)}"}), 500
+
+
+@professors_blueprint.route('/paginated', methods=['GET'])
+def get_paginated_professors():
+    try:
+        page = int(request.args.get('page', 1))
+        per_page = int(request.args.get('per_page', 5))
+        offset = (page - 1) * per_page
+
+        with get_db_connection() as conn:
+            with conn.cursor() as cursor:
+                cursor.execute("SELECT COUNT(*) FROM professor;")
+                total_records = cursor.fetchone()[0]
+
+                cursor.execute(
+                    "SELECT * FROM professor ORDER BY id LIMIT %s OFFSET %s;",
+                    (per_page, offset)
+                )
+                professors = cursor.fetchall()
+
+        return jsonify({
+            "total": total_records,
+            "page": page,
+            "per_page": per_page,
+            "data": professors
+        }), 200
+    except Exception as e:
+        return jsonify({"error": f"Error during pagination: {str(e)}"}), 500

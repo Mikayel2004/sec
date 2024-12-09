@@ -145,3 +145,4 @@ def update_schedule_by_group_and_date():
         return jsonify(updated_schedules), 200
     except Exception as e:
         return jsonify({"error": f"Error updating schedules: {str(e)}"}), 500
+

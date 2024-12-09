@@ -1,4 +1,5 @@
 # migrations.py
+
 import psycopg2
 from config import config
 

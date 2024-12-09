@@ -1,11 +1,13 @@
 from flask import Flask
 
 from Migrations.migrations import apply_migrations
+from Models.models import db
 from routes import register_routes
 from db.DBInit import initDb
 from config import config
 from db.DataGen import generate_data
 import psycopg2
+import os
 
 
 def initialize_database():
@@ -47,8 +49,20 @@ def initialize_database():
 
 
 def create_app():
-    """Create and configure the Flask application."""
-    app = Flask(__name__)
-    print("Registering routes...")
+    app = Flask(__name__, template_folder='template')
+
+    # Load database configuration
+    db_params = config()
+
+    # Construct the SQLAlchemy database URI
+    app.config['SQLALCHEMY_DATABASE_URI'] = (
+        f"postgresql://{db_params['admin_user']}:{db_params['admin_password']}"
+        f"@{db_params['host']}:{db_params['port']}/{db_params['db_name']}"
+    )
+    app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+
+    db.init_app(app)
     register_routes(app)
     return app
+
+print("Current Working Directory:", os.getcwd())
